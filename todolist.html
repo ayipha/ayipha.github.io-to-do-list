@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-  <title>To Do List! · modern</title>
+  <title>To Do List! · simpel</title>
   <!-- Font & Icons -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -25,7 +25,7 @@
       padding: 1rem;
     }
 
-    /* card utama — glassmorphism dengan radius lembut */
+    /* card utama */
     .modern-todo {
       max-width: 700px;
       width: 100%;
@@ -39,7 +39,6 @@
       transition: padding 0.2s;
     }
 
-    /* responsive padding */
     @media (max-width: 480px) {
       .modern-todo {
         padding: 1.5rem 1.2rem;
@@ -117,7 +116,7 @@
       font-weight: 450;
       color: #1f1939;
       outline: none;
-      min-width: 0; /* biar bisa mengecil di mobile */
+      min-width: 0;
     }
 
     .input-group input::placeholder {
@@ -152,7 +151,7 @@
       transform: scale(0.92);
     }
 
-    /* filter bar — responsif, bisa bungkus */
+    /* filter bar — hanya dua tombol: semua & selesai */
     .filter-section {
       display: flex;
       flex-wrap: wrap;
@@ -169,7 +168,7 @@
     .filter-option {
       border: none;
       background: transparent;
-      padding: 0.6rem 1.5rem;
+      padding: 0.6rem 1.8rem;
       border-radius: 3rem;
       font-size: 0.95rem;
       font-weight: 530;
@@ -375,10 +374,10 @@
       margin-bottom: 0.5rem;
     }
 
-    /* responsif ekstra kecil */
+    /* responsif kecil */
     @media (max-width: 400px) {
       .filter-option {
-        padding: 0.5rem 1rem;
+        padding: 0.5rem 1.2rem;
         font-size: 0.85rem;
       }
       .header-todo h1 {
@@ -393,33 +392,32 @@
 </head>
 <body>
   <div class="modern-todo">
-    <!-- header: judul To Do List! + counter dinamis -->
+    <!-- header -->
     <div class="header-todo">
       <i class="fa-regular fa-pen-to-square header-icon"></i>
       <h1>To Do List!</h1>
       <span class="counter-pill" id="total-items">0 items</span>
     </div>
 
-    <!-- input tambah tugas -->
+    <!-- input tugas -->
     <div class="input-group">
       <input type="text" id="todo-input" placeholder="tulis tugas baru..." autofocus>
       <button id="add-todo-btn"><i class="fa-solid fa-plus"></i></button>
     </div>
 
-    <!-- filter sesuai permintaan: semua, on proses, selesai -->
+    <!-- filter: semua & selesai (on proses dihapus) -->
     <div class="filter-section">
       <button class="filter-option active" id="filter-all"><i class="fa-regular fa-circle"></i> semua</button>
-      <button class="filter-option" id="filter-active"><i class="fa-regular fa-spinner"></i> on proses</button>
       <button class="filter-option" id="filter-completed"><i class="fa-regular fa-circle-check"></i> selesai</button>
     </div>
 
-    <!-- daftar tugas (akan diisi javascript, kosong awal) -->
+    <!-- daftar tugas (kosong awal) -->
     <ul class="tasks-container" id="tasks-list"></ul>
 
-    <!-- footer info dan aksi -->
+    <!-- footer -->
     <div class="footer-info">
       <div class="stats-group">
-        <span id="remaining-stat"><i class="fa-regular fa-hourglass-half"></i> <span id="remaining-number">0</span> on proses</span>
+        <span id="total-stat"><i class="fa-regular fa-list"></i> <span id="total-number">0</span> total</span>
         <span id="completed-stat"><i class="fa-regular fa-circle-check"></i> <span id="completed-number">0</span> selesai</span>
       </div>
       <button id="clear-completed-btn"><i class="fa-regular fa-trash-can"></i> hapus selesai</button>
@@ -428,7 +426,7 @@
 
   <script>
     (function() {
-      // State awal: kosong (tidak ada contoh)
+      // State awal: kosong
       let tasks = [];
 
       // Elemen DOM
@@ -436,23 +434,22 @@
       const inputField = document.getElementById('todo-input');
       const addBtn = document.getElementById('add-todo-btn');
       const filterAll = document.getElementById('filter-all');
-      const filterActive = document.getElementById('filter-active');
       const filterCompleted = document.getElementById('filter-completed');
       const totalSpan = document.getElementById('total-items');
-      const remainingNumSpan = document.getElementById('remaining-number');
-      const completedNumSpan = document.getElementById('completed-number');
+      const totalNumberSpan = document.getElementById('total-number');
+      const completedNumberSpan = document.getElementById('completed-number');
       const clearCompletedBtn = document.getElementById('clear-completed-btn');
 
-      // Filter aktif: 'all', 'active', 'completed'
+      // Filter aktif: 'all' atau 'completed'
       let currentFilter = 'all';
 
-      // --- localStorage (opsional, biar ga hilang setelah refresh) ---
+      // localStorage
       function saveToStorage() {
-        localStorage.setItem('todoListModern', JSON.stringify(tasks));
+        localStorage.setItem('todoListSimple', JSON.stringify(tasks));
       }
 
       function loadFromStorage() {
-        const saved = localStorage.getItem('todoListModern');
+        const saved = localStorage.getItem('todoListSimple');
         if (saved) {
           try {
             tasks = JSON.parse(saved);
@@ -460,27 +457,23 @@
             tasks = [];
           }
         } else {
-          // KOSONG MULAI — sesuai permintaan: biarin diisi manual user
-          tasks = [];
+          tasks = []; // KOSONG MULAI
         }
       }
 
-      // --- render tugas berdasarkan filter ---
+      // render tugas berdasarkan filter
       function render() {
         let filtered = tasks;
-        if (currentFilter === 'active') {
-          filtered = tasks.filter(t => !t.completed);
-        } else if (currentFilter === 'completed') {
+        if (currentFilter === 'completed') {
           filtered = tasks.filter(t => t.completed);
         }
 
         // update class active pada filter
-        [filterAll, filterActive, filterCompleted].forEach(btn => btn.classList.remove('active'));
+        filterAll.classList.remove('active');
+        filterCompleted.classList.remove('active');
         if (currentFilter === 'all') filterAll.classList.add('active');
-        else if (currentFilter === 'active') filterActive.classList.add('active');
         else if (currentFilter === 'completed') filterCompleted.classList.add('active');
 
-        // kosongkan list
         taskListEl.innerHTML = '';
 
         if (filtered.length === 0) {
@@ -494,19 +487,16 @@
             li.className = `task-item ${task.completed ? 'completed' : ''}`;
             li.dataset.id = task.id;
 
-            // checkbox
             const chk = document.createElement('input');
             chk.type = 'checkbox';
             chk.className = 'task-check';
             chk.checked = task.completed;
             chk.addEventListener('change', () => toggleCompleted(task.id));
 
-            // teks
             const txt = document.createElement('span');
             txt.className = 'task-text';
             txt.textContent = task.text;
 
-            // tombol hapus
             const del = document.createElement('button');
             del.className = 'delete-btn';
             del.innerHTML = '<i class="fa-regular fa-trash-can"></i>';
@@ -519,22 +509,20 @@
           });
         }
 
-        // update semua statistik
         updateStats();
       }
 
-      // hitung dan perbarui angka
+      // update statistik
       function updateStats() {
         const total = tasks.length;
-        const remaining = tasks.filter(t => !t.completed).length;
         const completed = tasks.filter(t => t.completed).length;
 
         totalSpan.textContent = `${total} item${total !== 1 ? 's' : ''}`;
-        remainingNumSpan.textContent = remaining;
-        completedNumSpan.textContent = completed;
+        totalNumberSpan.textContent = total;
+        completedNumberSpan.textContent = completed;
       }
 
-      // --- operasi CRUD ---
+      // operasi CRUD
       function addTask() {
         const text = inputField.value.trim();
         if (text === '') {
@@ -577,7 +565,7 @@
         render();
       }
 
-      // --- event listeners ---
+      // event listeners
       addBtn.addEventListener('click', (e) => {
         e.preventDefault();
         addTask();
@@ -590,18 +578,12 @@
         }
       });
 
-      // hilangkan outline merah saat mengetik
       inputField.addEventListener('input', () => {
         inputField.style.outline = 'none';
       });
 
       filterAll.addEventListener('click', () => {
         currentFilter = 'all';
-        render();
-      });
-
-      filterActive.addEventListener('click', () => {
-        currentFilter = 'active';
         render();
       });
 
